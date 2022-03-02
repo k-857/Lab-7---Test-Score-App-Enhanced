@@ -1,124 +1,112 @@
-
-let namesArr = ['Ben', 'Joel', 'Judy', 'Anne'];
-let scoresArr = [88, 98, 77, 88];
-
-function getAvgScore() {
-    let i = 0,
-        sum = 0,
-        len = scoresArr.length;
-    let name = '';
-    for (i; i < len; i++) {
-        sum += scoresArr[i];
-    }
-    return sum / len;
-}
-
-function getHighScore() {
-    let i = 0,
-        max = 0,
-        len = scoresArr.length;
-    let name = '';
-    for (i; i < len; i++) {
-        if (scoresArr[i] > max) {
-            max = scoresArr[i];
-            name = namesArr[i];
-        }
-    }
-    return name + ' with score of ' + max;
-}
-
-function initializeResults() {
-    let results = $('#results');
-    let high = getHighScore();
-    let avg = getAvgScore().toFixed(1);
-    $('#highScore').html(high);
-    $('#avgScore').html(avg);
-}
+var names = ["Ben", "Joel", "Judy", "Anne"];
+var scores = [88, 98, 77, 88];
+let position = 0;
+let maxScore = 0;
+let scoreWorks = 0;
+let nameWorks = 0;
 
 
-function displayResults() {
-    let results = $('#results');
-    results.toggle();
-}
+var $ = function (id)
+	{ 
+		return document.getElementById(id); 
+	};
+//
+function addScore()
+	{
+		const inputScore = parseInt($("score").value);
+		const inputName = $("name").value;
+		if((inputScore >= 0 && inputScore <= 100) && inputName !== "")
+			{
+				scores.push(inputScore);
+				names.push(inputName);
+				$("score").value = "";
+				$("name").value = "";
+				$("confirmation").innerHTML = "<b>" + inputName + "</b>" + " has submitted a score of " + "<b>" + inputScore + "</b>";
+				$("scoreError").innerHTML = "";
+				$("nameError").innerHTML = "";
+				$("name").focus();
+			}
+			else
+			{
+				$("confirmation").innerHTML = "";
+				if((inputScore < 0) || (inputScore > 100) || (Number.isInteger(inputScore) == false) || (inputScore == ""))
+					{
+						$("scoreError").innerHTML = "Please enter a number between 0 and 100";
+						scoreWorks = 0;
+					}
+					else
+					{
+						$("scoreError").innerHTML = "";
+						scoreWorks = 1;
+					}
 
-//  insert a new element in the html table after current index.  Assumes, names and scores are updates already.
-function insertTableElement(scoresTable, index) {
-    $('scoresTable tr:last').after('<tr> <td>' + namesArr[index] + '</td><td>' + scoresArr[index] + '</td></tr>');
-}
+				if(inputName == "")
+					{
+						$("nameError").innerHTML = "Please enter your name";
+						nameWorks = 0;
+					}
+					else
+					{
+						$("nameError").innerHTML = "";
+						nameWorks = 1;
+					}
 
-function insertNewTableElement(newName, newScore) {
-    let rowCount = document.getElementById("scores_table").getElementsByTagName("tr").length;
-    $('#scoresTable tr:last').append('<tr> <td>' + newName + '</td><td>' + newScore + '</td></tr>');
-    rowCount = document.getElementById("scores_table").getElementsByTagName("tr").length;
-}
+				if(nameWorks == 1 && scoreWorks == 0)
+					{
+						$("score").focus();
+					}
+				if(nameWorks == 0 && scoreWorks == 1)
+					{
+						$("name").focus();
+					}
+				if(nameWorks == 0 && scoreWorks == 0)
+					{
+						$("name").focus();
+					}
+				
+			}
+	};
+//
+function displayResults()
+	{
+		let totalscore = 0;
+		let average = 0;
+		for(let i=0; i < scores.length; i ++)
+			{
+				totalscore += scores[i];
 
-function initializeScoresTable() {
-    // Remove header row from table
-    $('#scores_table tr').slice(1).remove();
-    for (let i = 0; i < scoresArr.length; i++) {
-        insertNewTableElement($('#scores_table tr:last').after('<tr> <td>' + namesArr[i] + '</td><td>' + scoresArr[i] + '</td></tr>'));
-    }
-}
+				if(scores[i] > maxScore)
+					{
+						position = i;
+						maxScore = scores[i];
+					}
+			}
+		average = (totalscore / scores.length).toFixed(2);
+		$("results").innerHTML = "<h2>Results</h2><p>Average Score: " + average + "</p><p>Highest Score: " + names[position] + " with a score of " + maxScore + "</p>";
+		$("confirmation").innerHTML = "";
+		$("name").focus();
+	};
+//	
+function displayScores()
+	{
+		let displayString = "<br><tr><th>Names</th><th>Scores</th></tr>";
+		for(i=0; i < names.length; i++)
+			{
+				displayString += "<tr><td>" + names[i] + "</td><td>" + scores[i] + "</td></tr>";
+			}
+		$("scores_table").innerHTML = displayString;
+		$("confirmation").innerHTML = "";
+		$("name").focus();
+	};
+window.onload = function () 
+	{
+		$("add").onclick = addScore;
+		$("display_results").onclick = displayResults
+		$("display_scores").onclick = displayScores;
+		$("name").focus();
+	};
 
-function displayScores() {
-    let scores = $('#scores');
-    scores.toggle();
-}
 
-function addScore() {
-    let score = $('#score');
-    let name = $('#name');
-    if (score.val() === '' || name.val() === '') {
-        alert('Name and score must have values');
-        return;
-    }
-    scoresArr.push(parseInt(score.val()));
-    namesArr.push($("#name").val());
-    initializeScoresTable();
-    insertNewTableElement( name.val(), score.val() );
-    score.val('');
-    name.val('');
-    initializeResults();
-    $('#scores').show();
-    $('#results').show();
-}
 
-window.onload = function () {
-    $('#display_results').on('click',  function() {
-        displayResults();
-    });
-     
-    $('#display_scores').on('click',  function() {
-        displayScores();
-    });
-    $('#add').on('click',  function() {
-        addScore();
-    });
 
-    let name = $('#name');
-    let score = $('#score');
 
-    name.focus();
-    initializeResults();
-    initializeScoresTable();
-
-    // register jQuery extension
-    // used for changing focus on enter ekey
-    jQuery.extend(jQuery.expr[':'], {
-        focusable: function(el, index, selector) {
-            return $(el).is('a, button, :input, [tabindex]');
-        }
-    });
-
-    //  Changes focus to next input on enter key
-    $(document).on('keypress', 'input,select', function(e) {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            // Get all focusable elements on the page
-            let $canfocus = $(':focusable');
-            let index = $canfocus.index(this) + 1;
-            if (index >= $canfocus.length) index = 0;
-            $canfocus.eq(index).focus();
-        }
-    });
-}
